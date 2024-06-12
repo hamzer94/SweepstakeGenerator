@@ -1,0 +1,26 @@
+﻿@page "/sweepstake"
+@rendermode InteractiveServer
+
+<PageTitle>Sweepstake Generator</PageTitle>
+
+<h1>Sweepstake Generator</h1>
+
+
+<MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="Randomise">Randomise</MudButton>
+<MudButton Variant="Variant.Filled" Color="Color.Secondary" @onclick="Reveal">Reveal</MudButton>
+
+<br />
+<br />
+
+<MudTable Items="@DisplayedResults" Hover="true" SortLabel="Sort By" Height="80vh" RowStyleFunc="RowStyleFunc" FixedHeader="true">
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortBy="new Func<(int, string, string), object>(x=>x.Item1)">Pool</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<(int, string, string), object>(x=>x.Item2)">Team</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<(int, string, string), object>(x=>x.Item3)">Person</MudTableSortLabel></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Pool">@context.Item1</MudTd>
+        <MudTd DataLabel="Team">@context.Item2</MudTd>
+        <MudTd DataLabel="Person">@context.Item3</MudTd>
+    </RowTemplate>
+</MudTable>
