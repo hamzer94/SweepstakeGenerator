@@ -11,8 +11,8 @@ namespace SweepstakeGenerator.Components.Pages
 {
     public partial class Sweepstake
     {
-        private List<(int, string, string)> Results = new List<(int, string, string)>();
-        private List<(int, int, string, string)> DisplayedResults = new List<(int, int, string, string)>();
+        private List<(int, string, string, int)> Results = new List<(int, string, string, int)>();
+        private List<(int, int, string, string, int)> DisplayedResults = new List<(int, int, string, string, int)>();
 
         private int Index = 0;
 
@@ -125,6 +125,20 @@ namespace SweepstakeGenerator.Components.Pages
             DisplayedResults.Clear();
             Index = 0;
 
+            Pool1Remaining = new Dictionary<string, int>();
+            Pool2Remaining = new Dictionary<string, int>();
+            Pool3Remaining = new Dictionary<string, int>();
+            Pool4Remaining = new Dictionary<string, int>();
+            Pool5Remaining = new Dictionary<string, int>();
+            Pool6Remaining = new Dictionary<string, int>();
+
+            AddRange(Pool1Remaining, Pool1);
+            AddRange(Pool2Remaining, Pool2);
+            AddRange(Pool3Remaining, Pool3);
+            AddRange(Pool4Remaining, Pool4);
+            AddRange(Pool5Remaining, Pool5);
+            AddRange(Pool6Remaining, Pool6);
+
             Shuffle(People);
             Shuffle(Pool1);
             Shuffle(Pool2);
@@ -136,12 +150,12 @@ namespace SweepstakeGenerator.Components.Pages
             var index = 0;
             foreach (var person in People)
             {
-                Results.Add((1, Pool1[index], person));
-                Results.Add((2, Pool2[index], person));
-                Results.Add((3, Pool3[index], person));
-                Results.Add((4, Pool4[index], person));
-                Results.Add((5, Pool5[index], person));
-                Results.Add((6, Pool6[index], person));
+                Results.Add((1, Pool1.Keys.ElementAt(index), person, Pool1.Values.ElementAt(index)));
+                Results.Add((2, Pool2.Keys.ElementAt(index), person, Pool2.Values.ElementAt(index)));
+                Results.Add((3, Pool3.Keys.ElementAt(index), person, Pool3.Values.ElementAt(index)));
+                Results.Add((4, Pool4.Keys.ElementAt(index), person, Pool4.Values.ElementAt(index)));
+                Results.Add((5, Pool5.Keys.ElementAt(index), person, Pool5.Values.ElementAt(index)));
+                Results.Add((6, Pool6.Keys.ElementAt(index), person, Pool6.Values.ElementAt(index)));
 
                 index++;
             }
@@ -163,28 +177,28 @@ namespace SweepstakeGenerator.Components.Pages
         }
 
         public static void Shuffle(Dictionary<string, int> dictionary)
-    {
-        // Extract the dictionary entries into a list
-        List<KeyValuePair<string, int>> list = new List<KeyValuePair<string, int>>(dictionary);
-
-        // Shuffle the list
-        int n = list.Count;
-        while (n > 1)
         {
-            n--;
-            int k = rng.Next(n + 1);
-            KeyValuePair<string, int> value = list[k];
-            list[k] = list[n];
-            list[n] = value;
-        }
+            // Extract the dictionary entries into a list
+            List<KeyValuePair<string, int>> list = new List<KeyValuePair<string, int>>(dictionary);
 
-        // Clear the dictionary and add the shuffled entries back
-        dictionary.Clear();
-        foreach (KeyValuePair<string, int> entry in list)
-        {
-            dictionary[entry.Key] = entry.Value;
+            // Shuffle the list
+            int n = list.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = rng.Next(n + 1);
+                KeyValuePair<string, int> value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
+
+            // Clear the dictionary and add the shuffled entries back
+            dictionary.Clear();
+            foreach (KeyValuePair<string, int> entry in list)
+            {
+                dictionary[entry.Key] = entry.Value;
+            }
         }
-    }
 
         private void Reveal()
         {
@@ -211,12 +225,12 @@ namespace SweepstakeGenerator.Components.Pages
                 }
             }
 
-            DisplayedResults.Add((Index, Results[Index].Item1, Results[Index].Item2, Results[Index].Item3));
+            DisplayedResults.Add((Index, Results[Index].Item1, Results[Index].Item2, Results[Index].Item3, Results[Index].Item4));
             DisplayedResults = DisplayedResults.OrderByDescending(d => d.Item1).ToList();
             Index++;
         }
 
-        private string RowStyleFunc((int, int, string, string) arg1, int index)
+        private string RowStyleFunc((int, int, string, string, int) arg1, int index)
         {
             switch (arg1.Item2)
             {
@@ -226,6 +240,16 @@ namespace SweepstakeGenerator.Components.Pages
                     return "background-color:#ffedba";
                 default: return "background-color:white";
             }
+        }
+
+        private static void AddRange(Dictionary<string, int> target, Dictionary<string, int> source)
+        {
+            if (target == null)
+                throw new ArgumentNullException(nameof(target));
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+            foreach (var element in source)
+                target.Add(element.Key, element.Value);
         }
     }
 }

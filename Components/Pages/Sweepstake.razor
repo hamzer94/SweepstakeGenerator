@@ -19,11 +19,13 @@
             <HeaderContent>
                 <MudTh><MudTableSortLabel SortBy="new Func<(int, string, string), object>(x=>x.Item1)">Pool</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortBy="new Func<(int, string, string), object>(x=>x.Item2)">Team</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<(int, string, string), object>(x=>x.Item2)">Seed</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortBy="new Func<(int, string, string), object>(x=>x.Item3)">Person</MudTableSortLabel></MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="Pool">@context.Item2</MudTd>
                 <MudTd DataLabel="Team">@context.Item3</MudTd>
+                <MudTd DataLabel="Seed">@context.Item5</MudTd>
                 <MudTd DataLabel="Person">@context.Item4</MudTd>
             </RowTemplate>
         </MudTable>
