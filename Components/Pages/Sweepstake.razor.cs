@@ -162,18 +162,29 @@ namespace SweepstakeGenerator.Components.Pages
             }
         }
 
-        private static void Shuffle(Dictionary<string, int> dictionary)
+        public static void Shuffle(Dictionary<string, int> dictionary)
+    {
+        // Extract the dictionary entries into a list
+        List<KeyValuePair<string, int>> list = new List<KeyValuePair<string, int>>(dictionary);
+
+        // Shuffle the list
+        int n = list.Count;
+        while (n > 1)
         {
-            int n = list.Count;
-            while (n > 1)
-            {
-                n--;
-                int k = rng.Next(n + 1);
-                T value = list[k];
-                list[k] = list[n];
-                list[n] = value;
-            }
+            n--;
+            int k = rng.Next(n + 1);
+            KeyValuePair<string, int> value = list[k];
+            list[k] = list[n];
+            list[n] = value;
         }
+
+        // Clear the dictionary and add the shuffled entries back
+        dictionary.Clear();
+        foreach (KeyValuePair<string, int> entry in list)
+        {
+            dictionary[entry.Key] = entry.Value;
+        }
+    }
 
         private void Reveal()
         {
