@@ -4,13 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Reflection;
+using static MudBlazor.CategoryTypes;
 
 namespace SweepstakeGenerator.Components.Pages
 {
     public partial class Sweepstake
     {
         private List<(int, string, string)> Results = new List<(int, string, string)>();
-        private List<(int, string, string)> DisplayedResults = new List<(int, string, string)>();
+        private List<(int, int, string, string)> DisplayedResults = new List<(int, int, string, string)>();
 
         private int Index = 0;
 
@@ -24,47 +26,90 @@ namespace SweepstakeGenerator.Components.Pages
             "Neil"
         };
 
-        private List<string> Pool1 = new List<string>()
+        private Dictionary<string, int> Pool1 = new Dictionary<string, int>
         {
-            "France",
-            "England",
-            "Portugal",
-            "Belgium"
+            { "France", 1 },
+            { "England", 2 },
+            { "Portugal", 3 },
+            { "Belgium", 4 }
         };
-        private List<string> Pool2 = new List<string>()
+        private Dictionary<string, int> Pool2 = new Dictionary<string, int>
         {
-            "Germany",
-            "Spain",
-            "Netherlands",
-            "Italy"
+            { "Germany", 5 },
+            { "Spain", 6 },
+            { "Netherlands", 7 },
+            { "Italy", 8 }
         };
-        private List<string> Pool3 = new List<string>()
+        private Dictionary<string, int> Pool3 = new Dictionary<string, int>
         {
-            "Croatia",
-            "Austria",
-            "Denmark",
-            "Hungary"
+            { "Croatia", 9 },
+            { "Austria", 10 },
+            { "Denmark", 11 },
+            { "Hungary", 12 }
         };
-        private List<string> Pool4 = new List<string>()
+        private Dictionary<string, int> Pool4 = new Dictionary<string, int>
         {
-            "Switzerland",
-            "Ukraine",
-            "Czechia",
-            "Serbia"
+            { "Switzerland", 13 },
+            { "Ukraine", 14 },
+            { "Czechia", 15 },
+            { "Serbia", 16 }
         };
-        private List<string> Pool5 = new List<string>()
+        private Dictionary<string, int> Pool5 = new Dictionary<string, int>
         {
-            "Scotland",
-            "Turkey",
-            "Poland",
-            "Slovenia"
+            { "Scotland", 17 },
+            { "Turkey", 18 },
+            { "Poland", 19 },
+            { "Slovenia", 20 }
         };
-        private List<string> Pool6 = new List<string>()
+        private Dictionary<string, int> Pool6 = new Dictionary<string, int>
         {
-            "Romania",
-            "Slovakia",
-            "Albania",
-            "Georgia"
+            { "Romania", 21 },
+            { "Slovakia", 22 },
+            { "Albania", 23 },
+            { "Georgia", 24 }
+        };
+
+        private Dictionary<string, int> Pool1Remaining = new Dictionary<string, int>
+        {
+            { "France", 1 },
+            { "England", 2 },
+            { "Portugal", 3 },
+            { "Belgium", 4 }
+        };
+        private Dictionary<string, int> Pool2Remaining = new Dictionary<string, int>
+        {
+            { "Germany", 5 },
+            { "Spain", 6 },
+            { "Netherlands", 7 },
+            { "Italy", 8 }
+        };
+        private Dictionary<string, int> Pool3Remaining = new Dictionary<string, int>
+        {
+            { "Croatia", 9 },
+            { "Austria", 10 },
+            { "Denmark", 11 },
+            { "Hungary", 12 }
+        };
+        private Dictionary<string, int> Pool4Remaining = new Dictionary<string, int>
+        {
+            { "Switzerland", 13 },
+            { "Ukraine", 14 },
+            { "Czechia", 15 },
+            { "Serbia", 16 }
+        };
+        private Dictionary<string, int> Pool5Remaining = new Dictionary<string, int>
+        {
+            { "Scotland", 17 },
+            { "Turkey", 18 },
+            { "Poland", 19 },
+            { "Slovenia", 20 }
+        };
+        private Dictionary<string, int> Pool6Remaining = new Dictionary<string, int>
+        {
+            { "Romania", 21 },
+            { "Slovakia", 22 },
+            { "Albania", 23 },
+            { "Georgia", 24 }
         };
 
         public override Task SetParametersAsync(ParameterView parameters)
@@ -101,10 +146,23 @@ namespace SweepstakeGenerator.Components.Pages
                 index++;
             }
 
-            Results = Results.OrderBy(r => r.Item1).ToList();
+            Results = Results.OrderByDescending(r => r.Item1).ToList();
         }
 
         private static void Shuffle<T>(IList<T> list)
+        {
+            int n = list.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = rng.Next(n + 1);
+                T value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
+        }
+
+        private static void Shuffle(Dictionary<string, int> dictionary)
         {
             int n = list.Count;
             while (n > 1)
@@ -124,46 +182,36 @@ namespace SweepstakeGenerator.Components.Pages
                 return;
             }
 
-            int poolNumber = Results[Index].Item1;
-            string poolName = $"Pool{poolNumber}";
+            var poolNumber = Results[Index].Item1;
+            var country = Results[Index].Item2;
+            var poolName = $"Pool{poolNumber}Remaining";
 
             // Get the field info for the pool
-            FieldInfo poolFieldInfo = this.GetType().GetField(poolName, BindingFlags.NonPublic | BindingFlags.Instance);
+            var poolFieldInfo = GetType().GetField(poolName, BindingFlags.NonPublic | BindingFlags.Instance);
 
             if (poolFieldInfo != null)
             {
                 // Get the list value from the field
-                List<string> poolList = poolFieldInfo.GetValue(this) as List<string>;
+                Dictionary<string, int> poolList = poolFieldInfo.GetValue(this) as Dictionary<string, int>;
 
                 if (poolList != null)
                 {
-                    // Perform add or remove operations on the poolList
-                    // Example: Add a new item to the list
-                    poolList.Add("New Country");
-
-                    // Example: Remove an existing item from the list
-                    poolList.Remove("France");
-                    
-                    // Print the contents of the list to verify changes
-                    Console.WriteLine($"Contents of {poolName} after modifications:");
-                    foreach (var item in poolList)
-                    {
-                        Console.WriteLine(item);
-                    }
+                    poolList.Remove(country);
                 }
             }
 
-            DisplayedResults.Add(Results[Index]);
+            DisplayedResults.Add((Index, Results[Index].Item1, Results[Index].Item2, Results[Index].Item3));
+            DisplayedResults = DisplayedResults.OrderByDescending(d => d.Item1).ToList();
             Index++;
         }
 
-        private string RowStyleFunc((int, string, string) arg1, int index)
+        private string RowStyleFunc((int, int, string, string) arg1, int index)
         {
-            switch (arg1.Item1)
+            switch (arg1.Item2)
             {
-                case 1:
-                case 3:
-                case 5:
+                case 6:
+                case 4:
+                case 2:
                     return "background-color:#ffedba";
                 default: return "background-color:white";
             }

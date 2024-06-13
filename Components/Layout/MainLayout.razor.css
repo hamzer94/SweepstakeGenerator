@@ -94,3 +94,13 @@ main {
         right: 0.75rem;
         top: 0.5rem;
     }
+
+.row {
+    display: flex;
+    column-gap: 50px;
+}
+
+.column {
+    flex: 50%;
+    text-align: center;
+}
