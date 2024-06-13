@@ -1,5 +1,9 @@
-﻿using Microsoft.AspNetCore.Components;
-using static MudBlazor.CategoryTypes;
+using Microsoft.AspNetCore.Components;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace SweepstakeGenerator.Components.Pages
 {
@@ -115,10 +119,40 @@ namespace SweepstakeGenerator.Components.Pages
 
         private void Reveal()
         {
-            if (DisplayedResults.Count() >= Results.Count())
+            if (DisplayedResults.Count >= Results.Count)
             {
                 return;
             }
+
+            int poolNumber = Results[Index].Item1;
+            string poolName = $"Pool{poolNumber}";
+
+            // Get the field info for the pool
+            FieldInfo poolFieldInfo = this.GetType().GetField(poolName, BindingFlags.NonPublic | BindingFlags.Instance);
+
+            if (poolFieldInfo != null)
+            {
+                // Get the list value from the field
+                List<string> poolList = poolFieldInfo.GetValue(this) as List<string>;
+
+                if (poolList != null)
+                {
+                    // Perform add or remove operations on the poolList
+                    // Example: Add a new item to the list
+                    poolList.Add("New Country");
+
+                    // Example: Remove an existing item from the list
+                    poolList.Remove("France");
+                    
+                    // Print the contents of the list to verify changes
+                    Console.WriteLine($"Contents of {poolName} after modifications:");
+                    foreach (var item in poolList)
+                    {
+                        Console.WriteLine(item);
+                    }
+                }
+            }
+
             DisplayedResults.Add(Results[Index]);
             Index++;
         }
@@ -132,7 +166,6 @@ namespace SweepstakeGenerator.Components.Pages
                 case 5:
                     return "background-color:#ffedba";
                 default: return "background-color:white";
-
             }
         }
     }
