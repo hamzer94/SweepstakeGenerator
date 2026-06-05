@@ -1,4 +1,4 @@
-﻿@page "/sweepstake"
+@page "/sweepstake"
 @rendermode InteractiveServer
 
 <PageTitle>Sweepstake Generator</PageTitle>
@@ -6,125 +6,97 @@
 <h1>Sweepstake Generator</h1>
 
 
-<MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="Randomise">Randomise</MudButton>
-<MudButton Variant="Variant.Filled" Color="Color.Secondary" @onclick="Reveal">Reveal</MudButton>
+<div class="btn-toolbar">
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="Randomise" Disabled="@IsSpinning">Randomise</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Secondary" @onclick="RevealAsync" Disabled="@IsSpinning">Reveal</MudButton>
+    @if (AllRevealed)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Success" @onclick="() => ShowSummary = !ShowSummary" Disabled="@IsSpinning">@(ShowSummary ? "Hide Summary" : "Show Summary")</MudButton>
+    }
+</div>
 
-<br />
-<br />
+@if (IsSpinning)
+{
+    <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.82);display:flex;align-items:center;justify-content:center;z-index:9999;">
+        <div class="spin-card">
+            <div class="spin-pool-badge">Pool @SpinPoolNumber</div>
+            <div class="spin-person">
+                Drawing for
+                <strong>@SpinPersonName</strong>
+            </div>
+            <div class="spin-slot">
+                <span class="slot-text @(SpinLocked ? "slot-locked" : "")" @key="SpinTickKey">@SpinDisplayText</span>
+            </div>
+            @if (SpinLocked)
+            {
+                <div class="spin-winner-label">&#127942; Winner!</div>
+            }
+        </div>
+    </div>
+}
 
 <div class="row">
     <div class="column">
         <h1>Assigned Teams</h1>
-        <MudTable Items="@DisplayedResults" Hover="true" SortLabel="Sort By" Height="85vh" RowStyleFunc="RowStyleFunc" FixedHeader="true" Dense="true">
-            <HeaderContent>
-                <MudTh><MudTableSortLabel SortBy="new Func<(int, string, string), object>(x=>x.Item1)">Pool</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortBy="new Func<(int, string, string), object>(x=>x.Item2)">Team</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortBy="new Func<(int, string, string), object>(x=>x.Item2)">Seed</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortBy="new Func<(int, string, string), object>(x=>x.Item3)">Person</MudTableSortLabel></MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd DataLabel="Pool">@context.Item2</MudTd>
-                <MudTd DataLabel="Team">@context.Item3</MudTd>
-                <MudTd DataLabel="Seed">@context.Item5</MudTd>
-                <MudTd DataLabel="Person">@context.Item4</MudTd>
-            </RowTemplate>
-        </MudTable>
+
+        @* Desktop: standard table *@
+        <div class="hide-mobile">
+            <MudTable Items="@DisplayedResults" Hover="true" SortLabel="Sort By" RowStyleFunc="RowStyleFunc" FixedHeader="true" Dense="true">
+                <HeaderContent>
+                    <MudTh><MudTableSortLabel SortBy="new Func<(int, string, string), object>(x=>x.Item1)">Pool</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<(int, string, string), object>(x=>x.Item2)">Team</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<(int, string, string), object>(x=>x.Item2)">Seed</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<(int, string, string), object>(x=>x.Item3)">Person</MudTableSortLabel></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Pool">@context.Item2</MudTd>
+                    <MudTd DataLabel="Team">@context.Item3</MudTd>
+                    <MudTd DataLabel="Seed">@context.Item5</MudTd>
+                    <MudTd DataLabel="Person">@context.Item4</MudTd>
+                </RowTemplate>
+            </MudTable>
+        </div>
+
+        @* Mobile: 2x2 person cards *@
+        <div class="show-mobile">
+            <div class="person-grid">
+                @foreach (var entry in GetPersonGrid())
+                {
+                    <div class="person-card">
+                        <div class="person-card__name">@entry.Person</div>
+                        @if (entry.Picks.Count == 0)
+                        {
+                            <div class="person-card__empty">No picks yet</div>
+                        }
+                        else
+                        {
+                            @foreach (var pick in entry.Picks)
+                            {
+                                <div class="person-card__pick">
+                                    <span class="person-card__pool">P@(pick.Pool)</span>
+                                    <span class="person-card__team">@pick.Team</span>
+                                </div>
+                            }
+                        }
+                    </div>
+                }
+            </div>
+        </div>
     </div>
     <div class="column">
         <h1>Remaining Teams</h1>
         <MudGrid Justify="Justify.Center">
-            @if (Pool1Remaining.Any())
+            @foreach (var pool in RemainingPools)
             {
-                <MudItem Style="width:300px;">
-                    <MudPaper>
+                var isActive = pool.Pool == CurrentPoolNumber;
+                <MudItem Style="width:min(300px, 100%);" Class="@(isActive ? "pool-item pool-item--active" : "pool-item")">
+                    <MudPaper Elevation="@(isActive ? 6 : 1)">
                         <MudList>
-
-                            <MudListSubheader>Pool 1</MudListSubheader>
-                            @foreach (var item in Pool1Remaining)
+                            <MudListSubheader>Pool @pool.Pool</MudListSubheader>
+                            @foreach (var item in pool.Teams)
                             {
                                 <MudListItem>@item.Key - @item.Value</MudListItem>
                             }
-
-                        </MudList>
-                    </MudPaper>
-                </MudItem>
-            }
-            @if (Pool2Remaining.Any())
-            {
-                <MudItem Style="width:300px;">
-                    <MudPaper>
-                        <MudList>
-
-                            <MudListSubheader>Pool 2</MudListSubheader>
-                            @foreach (var item in Pool2Remaining)
-                            {
-                                <MudListItem>@item.Key - @item.Value</MudListItem>
-                            }
-
-                        </MudList>
-                    </MudPaper>
-                </MudItem>
-            }
-            @if (Pool3Remaining.Any())
-            {
-                <MudItem Style="width:300px;">
-                    <MudPaper>
-                        <MudList>
-
-                            <MudListSubheader>Pool 3</MudListSubheader>
-                            @foreach (var item in Pool3Remaining)
-                            {
-                                <MudListItem>@item.Key - @item.Value</MudListItem>
-                            }
-
-                        </MudList>
-                    </MudPaper>
-                </MudItem>
-            }
-            @if (Pool4Remaining.Any())
-            {
-                <MudItem Style="width:300px;">
-                    <MudPaper>
-                        <MudList>
-
-                            <MudListSubheader>Pool 4</MudListSubheader>
-                            @foreach (var item in Pool4Remaining)
-                            {
-                                <MudListItem>@item.Key - @item.Value</MudListItem>
-                            }
-
-                        </MudList>
-                    </MudPaper>
-                </MudItem>
-            }
-            @if (Pool5Remaining.Any())
-            {
-                <MudItem Style="width:300px;">
-                    <MudPaper>
-                        <MudList>
-
-                            <MudListSubheader>Pool 5</MudListSubheader>
-                            @foreach (var item in Pool5Remaining)
-                            {
-                                <MudListItem>@item.Key - @item.Value</MudListItem>
-                            }
-
-                        </MudList>
-                    </MudPaper>
-                </MudItem>
-            }
-            @if (Pool6Remaining.Any())
-            {
-                <MudItem Style="width:300px;">
-                    <MudPaper>
-                        <MudList>
-
-                            <MudListSubheader>Pool 6</MudListSubheader>
-                            @foreach (var item in Pool6Remaining)
-                            {
-                                <MudListItem>@item.Key - @item.Value</MudListItem>
-                            }
-
                         </MudList>
                     </MudPaper>
                 </MudItem>
@@ -132,3 +104,25 @@
         </MudGrid>
     </div>
 </div>
+
+@if (ShowSummary)
+{
+    <br />
+    <h1>Summary</h1>
+    <MudGrid Justify="Justify.Center">
+        @foreach (var group in GetGroupedResults())
+        {
+            <MudItem Style="width:min(350px, 100%);">
+                <MudPaper Elevation="3">
+                    <MudList>
+                        <MudListSubheader>@group.Key</MudListSubheader>
+                        @foreach (var entry in group.Value)
+                        {
+                            <MudListItem>Pool @entry.Pool - @entry.Team (Seed @entry.Seed)</MudListItem>
+                        }
+                    </MudList>
+                </MudPaper>
+            </MudItem>
+        }
+    </MudGrid>
+}

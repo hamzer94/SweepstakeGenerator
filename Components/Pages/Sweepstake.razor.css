@@ -1,0 +1,23 @@
+.spin-overlay {
+    /* ---- Button toolbar ---- */
+    .btn-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    /* ---- Remaining pool cards ---- */
+    .pool-item {
+        transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .pool-item--active ::deep .mud-paper {
+        border: 2px solid #3b82f6;
+        background-color: #eff6ff;
+    }
+
+    .pool-item--active ::deep .mud-list-subheader {
+        color: #1d4ed8;
+        font-weight: 700;
+    }

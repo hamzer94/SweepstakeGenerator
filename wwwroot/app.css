@@ -1,6 +1,7 @@
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
+    html, body {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
 
 a, .btn-link {
     color: #006bb7;
@@ -53,9 +54,193 @@ h1:focus {
 .row {
     display: flex;
     column-gap: 50px;
+    flex-wrap: wrap;
 }
 
 .column {
-    flex: 50%;
+    flex: 1 1 340px;
+    min-width: 0;
     text-align: center;
+}
+
+@media (max-width: 640px) {
+    .row {
+        flex-direction: column;
+        column-gap: 0;
+        row-gap: 24px;
+    }
+
+    .column {
+        flex: 1 1 100%;
+        width: 100%;
+    }
+}
+
+/* ============================================================
+   Spin / slot-machine overlay  (global — MudOverlay portal)
+   ============================================================ */
+.spin-card {
+    background: #1e1e2e;
+    border-radius: 18px;
+    padding: 36px 28px;
+    text-align: center;
+    width: min(92vw, 460px);
+    color: white;
+    box-shadow: 0 0 60px rgba(96, 165, 250, 0.25), 0 12px 40px rgba(0, 0, 0, 0.6);
+}
+
+.spin-pool-badge {
+    display: inline-block;
+    background: #3b82f6;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 5px 18px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.spin-person {
+    font-size: 1.15rem;
+    color: #94a3b8;
+    margin-bottom: 28px;
+}
+
+.spin-person strong {
+    color: #e2e8f0;
+    font-size: 1.5rem;
+    display: block;
+    margin-top: 4px;
+}
+
+.spin-slot {
+    background: #0d0d1a;
+    border: 2px solid #3b82f6;
+    border-radius: 10px;
+    padding: 22px 32px;
+    min-height: 88px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: inset 0 0 28px rgba(59, 130, 246, 0.12);
+}
+
+.slot-text {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #60c8ff;
+    display: block;
+    white-space: normal;
+    word-break: break-word;
+    animation: slot-tick 0.1s ease-out;
+}
+
+.slot-locked {
+    color: #ffd700;
+    text-shadow: 0 0 24px rgba(255, 215, 0, 0.55);
+    animation: slot-winner 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.spin-winner-label {
+    margin-top: 20px;
+    font-size: 1.1rem;
+    color: #ffd700;
+    letter-spacing: 0.05em;
+    animation: fade-in 0.4s ease-out;
+}
+
+@keyframes slot-tick {
+    0%   { opacity: 0; transform: translateY(55%); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slot-winner {
+    0%   { transform: scale(0.65); opacity: 0; }
+    65%  { transform: scale(1.18); }
+    100% { transform: scale(1);    opacity: 1; }
+}
+
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 640px) {
+    .spin-card {
+        padding: 28px 20px;
+        border-radius: 12px;
+    }
+
+    .slot-text {
+        font-size: 1.4rem;
+    }
+
+    .spin-person strong {
+        font-size: 1.2rem;
+    }
+}
+
+/* ============================================================
+   Responsive show/hide
+   ============================================================ */
+.hide-mobile { display: block; }
+.show-mobile { display: none; }
+
+@media (max-width: 640px) {
+    .hide-mobile { display: none !important; }
+    .show-mobile { display: block !important; }
+}
+
+/* ============================================================
+   Mobile 2x2 person grid
+   ============================================================ */
+.person-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.person-card {
+    background: #ffedba;
+    border-radius: 10px;
+    padding: 10px 8px;
+    text-align: left;
+    min-height: 80px;
+}
+
+.person-card__name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+    border-bottom: 1px solid rgba(0,0,0,0.12);
+    padding-bottom: 4px;
+}
+
+.person-card__empty {
+    font-size: 0.78rem;
+    color: #999;
+    font-style: italic;
+}
+
+.person-card__pick {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+.person-card__pool {
+    font-weight: 700;
+    color: #3b82f6;
+    white-space: nowrap;
+    font-size: 0.7rem;
+}
+
+.person-card__team {
+    color: #333;
 }
