@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   workflow_dispatch:
 
 permissions:
@@ -24,8 +24,8 @@ jobs:
         run: dotnet publish SweepstakeGenerator.csproj -c Release -o release --nologo
 
       - name: Change base-tag in index.html from / to /SweepstakeGenerator/
-        run: sed -i 's/<base href="\/" \/>/<base href="\/SweepstakeGenerator\/" \/>/g' release/wwwroot/index.html
-        # Note: We already changed it in the source, but this is a safeguard or for cases where it's / in source.
+        run: sed -i 's|<base href="/[^"]*" />|<base href="/SweepstakeGenerator/" />|g' release/wwwroot/index.html
+        # Note: This ensures the base href is correct for GitHub Pages regardless of source state.
 
       - name: copy index.html to 404.html
         run: cp release/wwwroot/index.html release/wwwroot/404.html
