@@ -1,0 +1,40 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Publish app
+        run: dotnet publish SweepstakeGenerator.csproj -c Release -o release --nologo
+
+      - name: Change base-tag in index.html from / to /SweepstakeGenerator/
+        run: sed -i 's/<base href="\/" \/>/<base href="\/SweepstakeGenerator\/" \/>/g' release/wwwroot/index.html
+        # Note: We already changed it in the source, but this is a safeguard or for cases where it's / in source.
+
+      - name: copy index.html to 404.html
+        run: cp release/wwwroot/index.html release/wwwroot/404.html
+
+      - name: Add .nojekyll file
+        run: touch release/wwwroot/.nojekyll
+
+      - name: Commit and Push to gh-pages branch
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: release/wwwroot
+          branch: gh-pages
