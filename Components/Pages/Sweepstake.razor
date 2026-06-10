@@ -6,11 +6,12 @@
 
 
 <div class="btn-toolbar">
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="Randomise" Disabled="@IsSpinning">Randomise</MudButton>
-    <MudButton Variant="Variant.Filled" Color="Color.Secondary" @onclick="RevealAsync" Disabled="@IsSpinning">Reveal</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="Randomise" Disabled="@(IsSpinning || _isRevealingAll)">Randomise</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Secondary" @onclick="() => RevealAsync()" Disabled="@(IsSpinning || _isRevealingAll)">Reveal</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Tertiary" @onclick="RevealAllAsync" Disabled="@(IsSpinning || _isRevealingAll || AllRevealed)">Reveal All</MudButton>
     @if (AllRevealed)
     {
-        <MudButton Variant="Variant.Filled" Color="Color.Success" @onclick="() => ShowSummary = !ShowSummary" Disabled="@IsSpinning">@(ShowSummary ? "Hide Summary" : "Show Summary")</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" @onclick="() => ShowSummary = !ShowSummary" Disabled="@(IsSpinning || _isRevealingAll)">@(ShowSummary ? "Hide Summary" : "Show Summary")</MudButton>
     }
 </div>
 

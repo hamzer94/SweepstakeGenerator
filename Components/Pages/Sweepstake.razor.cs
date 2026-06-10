@@ -18,6 +18,7 @@ namespace SweepstakeGenerator.Components.Pages
         private bool ShowSummary = false;
 
         private bool IsSpinning = false;
+        private bool _isRevealingAll = false;
         private string SpinDisplayText = string.Empty;
         private int SpinPoolNumber = 0;
         private string SpinPersonName = string.Empty;
@@ -352,7 +353,7 @@ namespace SweepstakeGenerator.Components.Pages
             }
         }
 
-        private async Task RevealAsync()
+        private async Task RevealAsync(bool isFast = false)
         {
             if (IsSpinning || DisplayedResults.Count >= Results.Count)
                 return;
@@ -378,14 +379,14 @@ namespace SweepstakeGenerator.Components.Pages
             SpinPersonName = person;
 
             // Slot-machine tick: fast ? slow, quadratic easing
-            const int totalTicks = 22;
+            int totalTicks = isFast ? 10 : 22;
             for (int i = 0; i < totalTicks; i++)
             {
                 SpinDisplayText = candidates[rng.Next(candidates.Count)];
                 SpinTickKey++;
                 StateHasChanged();
                 double progress = (double)i / totalTicks;
-                int delay = (int)(60 + 380 * progress * progress);
+                int delay = (int)((isFast ? 30 : 60) + (isFast ? 150 : 380) * progress * progress);
                 await Task.Delay(delay);
             }
 
@@ -395,7 +396,7 @@ namespace SweepstakeGenerator.Components.Pages
             SpinLocked = true;
             StateHasChanged();
 
-            await Task.Delay(1400);
+            await Task.Delay(isFast ? 500 : 1400);
 
             // Commit result
             poolList?.Remove(winner);
@@ -405,6 +406,26 @@ namespace SweepstakeGenerator.Components.Pages
 
             IsSpinning = false;
             StateHasChanged();
+        }
+
+        private async Task RevealAllAsync()
+        {
+            if (IsSpinning || _isRevealingAll || DisplayedResults.Count >= Results.Count)
+                return;
+
+            _isRevealingAll = true;
+            try
+            {
+                while (Index < Results.Count)
+                {
+                    await RevealAsync(isFast: true);
+                }
+            }
+            finally
+            {
+                _isRevealingAll = false;
+                StateHasChanged();
+            }
         }
 
         private string RowStyleFunc((int, int, string, string, int) arg1, int index)
