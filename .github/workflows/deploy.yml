@@ -6,10 +6,15 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
 
     steps:
@@ -23,18 +28,22 @@ jobs:
       - name: Publish app
         run: dotnet publish SweepstakeGenerator.csproj -c Release -o release --nologo
 
-      - name: Change base-tag in index.html from / to /SweepstakeGenerator/
-        run: sed -i 's|<base href="/[^"]*" />|<base href="/SweepstakeGenerator/" />|g' release/wwwroot/index.html
-        # Note: This ensures the base href is correct for GitHub Pages regardless of source state.
+      - name: Fix base href
+        run: |
+          # Replace base href with the repository name for production
+          sed -i 's|<base href="[^"]*" />|<base href="/${{ github.event.repository.name }}/" />|g' release/wwwroot/index.html
 
-      - name: copy index.html to 404.html
+      - name: Copy index.html to 404.html
         run: cp release/wwwroot/index.html release/wwwroot/404.html
 
-      - name: Add .nojekyll file
+      - name: Add .nojekyll
         run: touch release/wwwroot/.nojekyll
 
-      - name: Commit and Push to gh-pages branch
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          folder: release/wwwroot
-          branch: gh-pages
+          path: release/wwwroot
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
